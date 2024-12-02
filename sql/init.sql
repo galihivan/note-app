@@ -1,0 +1,10 @@
+CREATE DATABASE notes_db;
+USE notes_db;
+
+
+CREATE TABLE notes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  note TEXT NOT NULL,
+  deadline DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
