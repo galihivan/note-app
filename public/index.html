@@ -1,143 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes App</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
-
-  <div class="max-w-4xl mx-auto p-6">
-    <!-- Header -->
-    <header class="text-center mb-6">
-      <h1 class="text-4xl font-bold text-gray-800">Notes App</h1>
-    </header>
-    
-    <!-- Form untuk membuat atau mengedit catatan -->
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold text-gray-700 mb-4">Create / Edit Note</h2>
-      <form id="noteForm" class="bg-white p-6 rounded-lg shadow-md space-y-4">
-        <input 
-          type="hidden" 
-          id="noteId" 
-          value=""
-        >
-        <input 
-          type="text" 
-          id="title" 
-          placeholder="Title" 
-          required 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-        <textarea 
-          id="note" 
-          placeholder="Write your note" 
-          required 
-          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        ></textarea>
-        <button 
-          type="submit" 
-          class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-        >
-          Save Note
-        </button>
-      </form>
-    </section>
-
-    <hr class="border-gray-300 mb-6">
-
-    <!-- Menampilkan semua catatan -->
-    <section>
-      <h2 class="text-2xl font-semibold text-gray-700 mb-4">All Notes</h2>
-      <div id="notesList" class="space-y-4">
-        <!-- Notes akan ditambahkan di sini -->
+<body class="bg-gray-100 text-gray-900">
+  <header class="w-full border-b border-gray-300 bg-white shadow-md">
+    <div class="flex justify-between items-center h-[80px] px-4 sm:px-[120px]">
+        <!-- Logo Gambar (tampil di semua ukuran layar) -->
+        <img src="assets/img/logo.png" alt="Logo" class="w-[100px] sm:w-[200px] h-auto">
+   
+        <div class="flex items-center space-x-4">
+          <span class="text-gray-500 font-medium">Note App</span>
       </div>
-    </section>
-  </div>
+    </div>
+  </header>
 
-  <script>
-    const noteForm = document.getElementById('noteForm');
-    const notesList = document.getElementById('notesList');
+    <div class="container mx-auto p-4">
+        <!-- Form untuk menambahkan catatan -->
+        <form id="note-form" class="mb-6">
+            <input type="text" id="title" placeholder="Title" class="border p-2 w-full mb-4">
+            <textarea id="note" placeholder="Note content" class="border p-2 w-full mb-4"></textarea>
+            <input type="date" id="date" class="border p-2 w-full mb-4">
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full">Create Note</button>
+        </form>
 
-    // Menangani submit form untuk membuat atau mengedit catatan
-    noteForm.addEventListener('submit', function(event) {
-      event.preventDefault();
+        <!-- Tampilkan daftar catatan dalam tabel -->
+        <table class="min-w-full bg-white border border-gray-200 rounded shadow-md">
+            <thead>
+                <tr class="bg-green-600">
+                    <th class="px-4 py-2 border">Title</th>
+                    <th class="px-4 py-2 border">Note</th>
+                    <th class="px-4 py-2 border">Date</th>
+                    <th class="px-4 py-2 border">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="notes-list">
+                <!-- Catatan akan ditampilkan di sini -->
+            </tbody>
+        </table>
+    </div>
 
-      const id = document.getElementById('noteId').value;
-      const title = document.getElementById('title').value;
-      const note = document.getElementById('note').value;
-      const datetime = new Date().toLocaleString();
-
-      // Jika ID ada, update note; jika tidak, buat baru
-      const method = id ? 'PUT' : 'POST';
-      const endpoint = id ? `http://localhost:3000/notes/${id}` : 'http://localhost:3000/notes';
-
-      fetch(endpoint, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ title, datetime, note })
-      })
-      .then(response => response.json())
-      .then(() => {
-        noteForm.reset();
-        fetchNotes(); // Refresh daftar catatan
-      })
-      .catch(error => console.error('Error:', error));
-    });
-
-    // Menampilkan semua catatan
-    function fetchNotes() {
-      fetch('http://localhost:3000/notes')
-        .then(response => response.json())
-        .then(data => {
-          notesList.innerHTML = ''; // Bersihkan daftar catatan
-          data.forEach(note => {
-            const noteElement = document.createElement('div');
-            noteElement.className = 'bg-white p-4 rounded-lg shadow-md';
-            noteElement.innerHTML = `
-              <h3 class="text-lg font-bold text-gray-800">${note.title}</h3>
-              <small class="text-sm text-gray-500">${note.datetime}</small>
-              <p class="text-gray-700 mt-2">${note.note}</p>
-              <div class="mt-4 space-x-2">
-                <button onclick="editNote('${note.id}')" class="text-blue-500 hover:underline">Edit</button>
-                <button onclick="deleteNote('${note.id}')" class="text-red-500 hover:underline">Delete</button>
-              </div>
-            `;
-            notesList.appendChild(noteElement);
-          });
-        })
-        .catch(error => console.error('Error fetching notes:', error));
-    }
-
-    // Mengedit catatan
-    function editNote(id) {
-      fetch(`http://localhost:3000/notes/${id}`)
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('noteId').value = data.id;
-          document.getElementById('title').value = data.title;
-          document.getElementById('note').value = data.note;
-        })
-        .catch(error => console.error('Error fetching note:', error));
-    }
-
-    // Menghapus catatan
-    function deleteNote(id) {
-      fetch(`http://localhost:3000/notes/${id}`, {
-        method: 'DELETE',
-      })
-      .then(() => {
-        fetchNotes(); // Refresh daftar catatan
-      })
-      .catch(error => console.error('Error deleting note:', error));
-    }
-
-    // Panggil fungsi untuk menampilkan catatan saat halaman dimuat
-    fetchNotes();
-  </script>
-
+    <script src="app.js"></script>
 </body>
 </html>
